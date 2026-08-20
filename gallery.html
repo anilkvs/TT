@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery — Club Table Tennis</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  .slideshow{
+    position:relative; width:100%; aspect-ratio:16/10; background:#0A1F1F; border-radius:14px;
+    overflow:hidden; box-shadow:0 12px 28px rgba(18,40,58,0.18);
+  }
+  .slideshow img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#0A1F1F;
+    opacity:0; transition:opacity 0.6s ease;
+  }
+  .slideshow img.active{ opacity:1; }
+  .slide-controls{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:14px; }
+  .slide-controls button{
+    background:var(--court); color:#fff; border:none; width:36px; height:36px; border-radius:50%;
+    font-size:16px; cursor:pointer;
+  }
+  .slide-controls button:hover{ background:var(--court-dark); }
+  .dots{ display:flex; gap:6px; }
+  .dots span{ width:7px; height:7px; border-radius:50%; background:var(--line); display:inline-block; }
+  .dots span.active{ background:var(--paddle); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="brand" href="index.html"><img src="favicon.svg" alt=""> Club Table Tennis</a>
+  <div class="links">
+    <a href="index.html">Dashboard</a>
+    <a href="schedule.html">Schedule</a>
+    <a href="leaderboard.html">Leader Board</a>
+    <a href="gallery.html" class="active">Gallery</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Gallery</h1>
+  <p>Photos from the tournament — auto-advancing every 3 seconds.</p>
+</div>
+
+<div class="wrap">
+  <div class="section">
+    <div class="card-panel" id="gallery-panel">
+      <div class="slideshow" id="slideshow"></div>
+      <div class="slide-controls">
+        <button id="prev-btn" aria-label="Previous photo">‹</button>
+        <div class="dots" id="dots"></div>
+        <button id="next-btn" aria-label="Next photo">›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>Club Table Tennis · Hosted free on GitHub Pages</footer>
+
+<script>
+  const SLIDE_SECONDS = 3;
+  let images = [];
+  let current = 0;
+  let timer = null;
+
+  const slideshowEl = document.getElementById('slideshow');
+  const dotsEl = document.getElementById('dots');
+  const panelEl = document.getElementById('gallery-panel');
+
+  function render(){
+    slideshowEl.innerHTML = images.map((src,i)=>`<img src="${src}" class="${i===current?'active':''}" alt="Tournament photo ${i+1}">`).join('');
+    dotsEl.innerHTML = images.map((_,i)=>`<span class="${i===current?'active':''}"></span>`).join('');
+  }
+  function goTo(i){
+    current = (i + images.length) % images.length;
+    render();
+  }
+  function next(){ goTo(current+1); }
+  function prev(){ goTo(current-1); }
+  function startAuto(){
+    clearInterval(timer);
+    if(images.length > 1) timer = setInterval(next, SLIDE_SECONDS*1000);
+  }
+
+  document.getElementById('next-btn').onclick = ()=>{ next(); startAuto(); };
+  document.getElementById('prev-btn').onclick = ()=>{ prev(); startAuto(); };
+
+  fetch('images.json')
+    .then(r=>r.json())
+    .then(list=>{
+      images = list || [];
+      if(images.length===0){
+        panelEl.innerHTML = `<div class="empty-state"><span class="big-ball">📷</span><b>No photos yet.</b><br>Add image files to the <code>images</code> folder and list their filenames in <code>images.json</code>.</div>`;
+        return;
+      }
+      render();
+      startAuto();
+    })
+    .catch(()=>{
+      panelEl.innerHTML = `<div class="empty-state"><span class="big-ball">📷</span><b>Couldn't load images.json.</b><br>Make sure it's in the same folder as this page and lists valid image paths.</div>`;
+    });
+</script>
+</body>
+</html>
