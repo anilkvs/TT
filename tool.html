@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Table Tennis Tournament Builder</title>
+<style>
+  :root{
+    --bg:#BFE6F7;
+    --panel:#FFFFFF;
+    --panel2:#E3F4FC;
+    --line: rgba(8,30,40,0.16);
+    --cream:#0A1B23;
+    --cream-dim: rgba(10,27,35,0.62);
+    --ink:#0A1B23;
+    --red:#C4392B;
+    --red-dim: rgba(196,57,43,0.14);
+    --amber:#A8690E;
+    --amber-dim: rgba(168,105,14,0.14);
+    --blue:#116393;
+    --blue-dim: rgba(17,99,147,0.14);
+    --green-accent:#0E7C61;
+    --radius: 10px;
+    --mono: 'SF Mono', 'Consolas', 'Menlo', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--cream);
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    min-height:100vh;
+    background-image:
+      radial-gradient(circle at 15% 0%, rgba(127,184,142,0.08), transparent 40%),
+      radial-gradient(circle at 85% 100%, rgba(214,72,58,0.07), transparent 45%);
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px 80px;}
+
+  /* SCOREBOARD HEADER */
+  .scoreboard{
+    background: linear-gradient(180deg, #9FD8F2, #BFE6F7);
+    border-bottom: 3px solid var(--red);
+    padding: 22px 0 0;
+    margin-bottom: 26px;
+  }
+  .scoreboard-inner{max-width:1180px;margin:0 auto;padding:0 20px 18px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .dot{width:14px;height:14px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px var(--red-dim);}
+  .brand h1{
+    font-size:26px; margin:0; letter-spacing:2.5px; text-transform:uppercase;
+    font-weight:800; font-stretch:condensed;
+  }
+  .brand .sub{font-family:var(--mono); font-size:11px; letter-spacing:1.5px; color: var(--cream-dim); text-transform:uppercase; margin-top:2px;}
+  .readouts{display:flex; gap:10px; flex-wrap:wrap;}
+  .readout{
+    background:#FFFFFF; border:1px solid var(--line); border-radius:6px;
+    padding:6px 12px; min-width:64px; text-align:center;
+  }
+  .readout .num{font-family:var(--mono); font-size:20px; color:var(--blue); font-weight:700;}
+  .readout .lbl{font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--cream-dim); margin-top:2px;}
+
+  /* NAV */
+  nav.tabs{display:flex; gap:6px; max-width:1180px; margin:0 auto; padding:0 20px; flex-wrap:wrap;}
+  nav.tabs button{
+    background:transparent; border:1px solid var(--line); color:var(--cream-dim);
+    padding:9px 14px; border-radius:8px 8px 0 0; cursor:pointer; font-size:12.5px;
+    letter-spacing:0.5px; text-transform:uppercase; font-weight:600; font-family:inherit;
+    border-bottom:none; opacity:0.55;
+  }
+  nav.tabs button.active{ background:var(--panel); color:var(--cream); opacity:1; border-color:var(--line); }
+  nav.tabs button:not(.active):not(:disabled):hover{opacity:0.85;}
+  nav.tabs button:disabled{cursor:not-allowed; opacity:0.28;}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:0 8px 8px 8px; padding:26px; margin-top:0;}
+  h2{margin-top:0; font-size:19px; letter-spacing:0.5px; text-transform:uppercase; font-weight:800;}
+  h3{font-size:14.5px; letter-spacing:0.5px; text-transform:uppercase; color:var(--cream-dim); margin-bottom:10px;}
+  p.hint{color:var(--cream-dim); font-size:13.5px; line-height:1.5;}
+
+  textarea, input[type=text], input[type=number], select{
+    width:100%; background:#FFFFFF; border:1px solid var(--line); color:var(--cream);
+    padding:10px 12px; border-radius:6px; font-family:inherit; font-size:14px;
+  }
+  textarea{min-height:130px; resize:vertical; line-height:1.6;}
+  label.field-label{display:block; font-size:11.5px; text-transform:uppercase; letter-spacing:1px; color:var(--cream-dim); margin-bottom:6px;}
+
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  @media(max-width:820px){ .grid3{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;} }
+
+  .tier-tag{display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; padding:2px 8px; border-radius:20px; font-weight:700;}
+  .tier-adv{background:var(--red-dim); color:var(--red);}
+  .tier-int{background:var(--amber-dim); color:var(--amber);}
+  .tier-rest{background:var(--blue-dim); color:var(--blue);}
+
+  button.btn{
+    background:var(--red); color:#fff; border:none; padding:11px 20px; border-radius:7px;
+    cursor:pointer; font-weight:700; font-size:13.5px; letter-spacing:0.4px; text-transform:uppercase;
+    font-family:inherit;
+  }
+  button.btn:hover{filter:brightness(1.08);}
+  button.btn.secondary{background:var(--panel2); color:var(--cream); border:1px solid var(--line);}
+  button.btn.small{padding:6px 12px; font-size:11.5px;}
+  button.btn:disabled{opacity:0.35; cursor:not-allowed;}
+  button.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--cream-dim);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;}
+
+  .actions{display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;}
+
+  .pool-card{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:12px;}
+  .pool-card .pool-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .pool-card .pool-head .name{font-weight:800; letter-spacing:0.5px; text-transform:uppercase; font-size:14px;}
+  .pool-card ul{margin:0; padding-left:18px; font-size:13.5px;}
+  .pool-card ul li{margin-bottom:3px;}
+
+  .order-row{display:flex; align-items:center; gap:10px; background:var(--panel2); border:1px solid var(--line); border-radius:7px; padding:9px 12px; margin-bottom:8px;}
+  .order-row .idx{font-family:var(--mono); color:var(--green-accent); font-weight:700; width:22px;}
+  .order-row .grow{flex:1; font-weight:600;}
+  .order-row .btns{display:flex; gap:4px;}
+
+  .pick-banner{
+    background:linear-gradient(90deg, var(--red-dim), transparent);
+    border:1px solid var(--red); border-radius:8px; padding:14px 18px; margin-bottom:18px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;
+  }
+  .pick-banner .who{font-size:17px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;}
+  .pick-banner .phase{font-family:var(--mono); font-size:12px; color:var(--cream-dim);}
+
+  .player-pool-list{display:flex; flex-wrap:wrap; gap:8px;}
+  .player-chip{
+    background:#FFFFFF; border:1px solid var(--line); padding:8px 14px; border-radius:20px;
+    cursor:pointer; font-size:13.5px; font-weight:600; color:var(--cream);
+  }
+  .player-chip:hover{border-color:var(--blue); color:var(--blue); background:var(--panel2);}
+
+  .picklog{margin-top:20px; font-size:12.5px; color:var(--cream-dim); max-height:180px; overflow-y:auto; border-top:1px solid var(--line); padding-top:10px;}
+  .picklog div{padding:3px 0; font-family:var(--mono);}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  table th, table td{padding:8px 10px; border-bottom:1px solid var(--line); text-align:left;}
+  table th{color:var(--cream-dim); text-transform:uppercase; font-size:10.5px; letter-spacing:0.8px;}
+
+  .round-block{border:1px solid var(--line); border-radius:8px; margin-bottom:18px; overflow:hidden;}
+  .round-block .rh{background:var(--panel2); padding:12px 16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+  .round-block .rh .title{font-weight:800; text-transform:uppercase; letter-spacing:0.5px; font-size:13.5px;}
+  .round-block .rb{padding:14px 16px;}
+  .match-row{display:flex; align-items:center; justify-content:space-between; padding:9px 4px; border-bottom:1px dashed var(--line); gap:10px; flex-wrap:wrap;}
+  .match-row:last-child{border-bottom:none;}
+  .match-players{font-weight:600; font-size:13.5px;}
+  .match-players .vs{color:var(--cream-dim); font-weight:400; margin:0 6px;}
+  .match-meta{font-family:var(--mono); font-size:11px; color:var(--cream-dim);}
+  select.winner-select{width:auto; padding:5px 8px; font-size:12px;}
+
+  .empty-note{color:var(--cream-dim); font-size:13.5px; padding:20px; text-align:center; border:1px dashed var(--line); border-radius:8px;}
+  #print-share-area{display:none;}
+
+  .toggle-row{display:flex; align-items:center; gap:8px; font-size:13px;}
+  .footer-bar{
+    position:fixed; bottom:0; left:0; right:0; background:#FFFFFF; border-top:1px solid var(--line);
+    padding:10px 20px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap; z-index:50;
+    box-shadow: 0 -2px 10px rgba(8,30,40,0.08);
+  }
+  .footer-bar button, .footer-bar label{color:var(--cream);}
+  .footer-bar button.btn-ghost, .footer-bar label.btn-ghost{background:var(--panel2); border-color:var(--line);}
+  .footer-bar button{font-size:12px;}
+  @media print{
+    nav.tabs, .footer-bar, .actions, .no-print{display:none !important;}
+    body{background:#fff; color:#000;}
+    .panel{border:none; background:#fff; color:#000;}
+    .pool-card, .round-block, .match-row{border-color:#ccc;}
+    .scoreboard{background:#fff !important; border-bottom:2px solid #000;}
+    .brand h1, .brand .sub, .readout .num, .readout .lbl{color:#000 !important;}
+    #print-share-area{display:none;}
+    body.sharing-print .scoreboard, body.sharing-print .wrap{display:none !important;}
+    body.sharing-print #print-share-area{display:block !important; padding:10px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="scoreboard">
+  <div class="scoreboard-inner">
+    <div class="brand">
+      <div class="dot"></div>
+      <div>
+        <h1>Table Tennis Tournament Builder</h1>
+      </div>
+    </div>
+    <div class="readouts">
+      <div class="readout"><div class="num" id="ro-pools">0</div><div class="lbl">Pools</div></div>
+      <div class="readout"><div class="num" id="ro-players">0</div><div class="lbl">Players</div></div>
+      <div class="readout"><div class="num" id="ro-picks">0/0</div><div class="lbl">Draft Picks</div></div>
+      <div class="readout"><div class="num" id="ro-matches">0</div><div class="lbl">Matches</div></div>
+    </div>
+  </div>
+  <nav class="tabs" id="tabnav"></nav>
+</div>
+
+<div class="wrap">
+  <div class="panel" id="tabcontent"></div>
+</div>
+
+<div id="print-share-area"></div>
+
+<div class="footer-bar no-print">
+  <span style="font-size:11px; color:var(--cream-dim); align-self:center;" id="autosave-note">💾 Auto-saved in this browser</span>
+  <button class="btn-ghost" onclick="saveProgress()">⬇ Save progress (.json)</button>
+  <label class="btn-ghost" style="cursor:pointer;">⬆ Load progress
+    <input type="file" accept=".json" style="display:none" onchange="loadProgress(event)">
+  </label>
+  <button class="btn-ghost" onclick="window.print()">🖨 Print current tab</button>
+  <button class="btn-ghost" onclick="if(confirm('Reset everything? This clears all players, draft picks and matches — including the auto-saved copy in this browser.')) resetAll()">⟲ Reset all</button>
+</div>
+
+<script>
+/* ============================= STATE ============================= */
+const TABS = ['players','pools','order','draft','rosters','schedule','standings'];
+const TAB_LABELS = {players:'1 · Players', pools:'2 · Pools & Captains', order:'3 · Draft Order', draft:'4 · Live Draft', rosters:'5 · Rosters', schedule:'6 · Match Schedule', standings:'7 · Standings'};
+
+let S = {
+  currentTab: 'players',
+  advance: [],       // [{id,name}]
+  intermediate: [],
+  rest: [],
+  numPools: 0,
+  pools: [],          // [{id,name,captains:[playerObj,...], intermediate:[], rest:[]}]
+  extraAdvanceQueue: [], // advance players beyond 1-per-pool, draftable
+  draftOrderBase: [],   // array of pool ids, manual order
+  orderMode: 'rotate',   // 'rotate' | 'snake' | 'fixed' — who gets first pick each round
+  draftPhaseSeq: [],    // computed pick sequence [{poolId}]
+  draftPointer: 0,
+  draftPool: [],        // remaining draftable players in current phase order: extraAdvance -> intermediate -> rest
+  draftLog: [],          // [{poolId, playerId, tier}]
+  draftDone: false,
+  rrRounds: [],           // [[{poolA,poolB}, ...round1 ties], [round2 ties], ...] — round-robin draw of pools
+  matchTypesEnabled: { advadv:true, intint:true, restrest:true, advint:true, advrest:true, intrest:true },
+  tiePairings: {},        // tieId -> { typeKey: { a:[playerId,...], b:[playerId,...] } }
+  results: {}             // "tieId::typeKey" -> 'a' | 'b'
+};
+
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+/* ============================= AUTOSAVE (localStorage) ============================= */
+const AUTOSAVE_KEY = 'paddle_draft_autosave_v1';
+function autosave(){
+  try{ localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(S)); }catch(e){ /* storage unavailable — user can still use manual Save/Load */ }
+}
+function tryAutoload(){
+  try{
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if(raw){ const loaded = JSON.parse(raw); if(loaded && loaded.advance) S = Object.assign(S, loaded); }
+  }catch(e){ /* ignore */ }
+}
+
+/* ============================= NAV ============================= */
+function canAccess(tab){
+  const idx = TABS.indexOf(tab);
+  if(idx<=0) return true;
+  if(tab==='pools') return S.advance.length>0;
+  if(tab==='order') return S.pools.length>0;
+  if(tab==='draft') return S.draftOrderBase.length>0;
+  if(tab==='rosters') return S.draftDone || S.draftLog.length>0;
+  if(tab==='schedule') return S.draftDone;
+  if(tab==='standings') return S.rrRounds.length>0;
+  return true;
+}
+function goTab(t){ if(!canAccess(t)) return; S.currentTab=t; render(); }
+
+function renderNav(){
+  const nav = document.getElementById('tabnav');
+  nav.innerHTML='';
+  TABS.forEach(t=>{
+    const b = document.createElement('button');
+    b.textContent = TAB_LABELS[t];
+    b.className = t===S.currentTab ? 'active':'';
+    b.disabled = !canAccess(t);
+    b.onclick = ()=>goTab(t);
+    nav.appendChild(b);
+  });
+}
+
+function renderReadouts(){
+  document.getElementById('ro-pools').textContent = S.pools.length;
+  document.getElementById('ro-players').textContent = S.advance.length + S.intermediate.length + S.rest.length;
+  document.getElementById('ro-picks').textContent = `${S.draftLog.length}/${S.draftPhaseSeq.length}`;
+  let totalMatches = 0;
+  Object.keys(S.tiePairings||{}).forEach(tieId=>{
+    Object.keys(S.tiePairings[tieId]).forEach(typeKey=>{
+      const slot = S.tiePairings[tieId][typeKey];
+      if(pairingIsReady(slot)) totalMatches++;
+    });
+  });
+  document.getElementById('ro-matches').textContent = totalMatches;
+}
+
+/* ============================= RENDER DISPATCH ============================= */
+function render(){
+  renderNav(); renderReadouts();
+  const el = document.getElementById('tabcontent');
+  el.innerHTML='';
+  ({players:renderPlayers, pools:renderPools, order:renderOrder, draft:renderDraft, rosters:renderRosters, schedule:renderSchedule, standings:renderStandings})[S.currentTab](el);
+  autosave();
+}
+
+/* ============================= TAB 1: PLAYERS ============================= */
+function renderPlayers(el){
+  el.innerHTML = `
+    <h2>Step 1 — Enter Players</h2>
+    <p class="hint">One name per line in each box. These three groups are the only skill tiers used throughout the tool.</p>
+    <div class="grid3">
+      <div>
+        <label class="field-label"><span class="tier-tag tier-adv">Advance</span> — future captains</label>
+        <textarea id="ta-adv" placeholder="e.g.\nRavi\nKrishna\nSuresh">${S.advance.map(p=>p.name).join('\n')}</textarea>
+      </div>
+      <div>
+        <label class="field-label"><span class="tier-tag tier-int">Intermediate</span></label>
+        <textarea id="ta-int" placeholder="Name per line">${S.intermediate.map(p=>p.name).join('\n')}</textarea>
+      </div>
+      <div>
+        <label class="field-label"><span class="tier-tag tier-rest">Rest</span></label>
+        <textarea id="ta-rest" placeholder="Name per line">${S.rest.map(p=>p.name).join('\n')}</textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="savePlayers()">Save &amp; Continue to Pools →</button>
+    </div>
+  `;
+}
+function parseLines(id){
+  return document.getElementById(id).value.split('\n').map(s=>s.trim()).filter(Boolean);
+}
+function dedupeNames(names, prefix){
+  const seen = {};
+  return names.map(n=>{
+    seen[n] = (seen[n]||0)+1;
+    const finalName = seen[n]>1 ? `${n} (${seen[n]})` : n;
+    return {id: uid(prefix), name: finalName};
+  });
+}
+function savePlayers(){
+  const adv = parseLines('ta-adv'), intl = parseLines('ta-int'), rst = parseLines('ta-rest');
+  if(adv.length<2){ alert('Enter at least 2 Advance players — they become your captains.'); return; }
+  S.advance = dedupeNames(adv,'adv');
+  S.intermediate = dedupeNames(intl,'int');
+  S.rest = dedupeNames(rst,'rest');
+  // reset downstream state since player lists changed
+  S.pools=[]; S.extraAdvanceQueue=[]; S.draftOrderBase=[]; S.draftPhaseSeq=[]; S.draftPointer=0;
+  S.draftLog=[]; S.draftDone=false; S.rrRounds=[]; S.tiePairings={}; S.results={};
+  goTab('pools');
+}
+
+/* ============================= TAB 2: POOLS ============================= */
+function renderPools(el){
+  const suggested = Math.min(S.advance.length, 8);
+  if(S.numPools===0) S.numPools = suggested;
+  el.innerHTML = `
+    <h2>Step 2 — Pools &amp; Captains</h2>
+    <p class="hint">You have <b>${S.advance.length}</b> Advance players. Set how many pools (teams) to run — each pool gets one primary captain.
+    If Advance players remain beyond that, they go into a draftable "Advance" queue and get picked as co-captains first, before Intermediate.</p>
+    <div class="grid2">
+      <div>
+        <label class="field-label">Number of pools / teams</label>
+        <input type="number" id="numpools-input" min="2" max="${S.advance.length}" value="${S.numPools}">
+      </div>
+      <div>
+        <label class="field-label">Primary captain assignment</label>
+        <select id="assign-mode">
+          <option value="order">In the order I entered them</option>
+          <option value="shuffle">Randomly shuffled</option>
+        </select>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" onclick="buildPools()">Build Pools</button>
+    </div>
+    <div id="pools-preview" style="margin-top:22px;"></div>
+  `;
+  document.getElementById('numpools-input').addEventListener('change', e=>{ S.numPools = parseInt(e.target.value)||suggested; });
+  if(S.pools.length) drawPoolsPreview();
+}
+function buildPools(){
+  const n = S.numPools;
+  if(n<2 || n>S.advance.length){ alert('Number of pools must be between 2 and your total Advance player count.'); return; }
+  const mode = document.getElementById('assign-mode').value;
+  let advList = [...S.advance];
+  if(mode==='shuffle') advList = shuffle(advList);
+  const primaries = advList.slice(0,n);
+  S.extraAdvanceQueue = advList.slice(n); // becomes draftable
+  const poolNames = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  S.pools = primaries.map((cap,i)=>({
+    id:'pool_'+i, name:'Pool '+poolNames[i],
+    captains:[cap], intermediate:[], rest:[]
+  }));
+  // rebuilding pools invalidates any downstream order/draft/schedule state
+  S.draftOrderBase = S.pools.map(p=>p.id);
+  S.draftPhaseSeq=[]; S.draftPointer=0; S.draftPool=[]; S.draftLog=[]; S.draftDone=false;
+  S.rrRounds=[]; S.tiePairings={}; S.results={};
+  drawPoolsPreview();
+}
+function drawPoolsPreview(){
+  const wrap = document.getElementById('pools-preview');
+  if(!wrap) return;
+  let html = `<h3>Pools (${S.pools.length})</h3>`;
+  S.pools.forEach(p=>{
+    html += `<div class="pool-card"><div class="pool-head"><span class="name">${p.name}</span><span class="tier-tag tier-adv">Captain: ${p.captains.map(c=>c.name).join(', ')}</span></div></div>`;
+  });
+  if(S.extraAdvanceQueue.length){
+    html += `<h3 style="margin-top:16px;">Draftable Advance queue (${S.extraAdvanceQueue.length})</h3>
+    <p class="hint">These extra Advance players will be picked as co-captains — one round of picks — before Intermediate players are drafted.</p>
+    <div class="player-pool-list">${S.extraAdvanceQueue.map(p=>`<span class="player-chip" style="cursor:default;">${p.name}</span>`).join('')}</div>`;
+  } else {
+    html += `<p class="hint">No leftover Advance players — draft will start directly with Intermediate.</p>`;
+  }
+  wrap.innerHTML = html;
+  wrap.innerHTML += `<div class="actions"><button class="btn" onclick="goTab('order')">Continue to Draft Order →</button></div>`;
+}
+
+/* ============================= TAB 3: DRAFT ORDER ============================= */
+function renderOrder(el){
+  if(!S.draftOrderBase.length) S.draftOrderBase = S.pools.map(p=>p.id);
+  el.innerHTML = `
+    <h2>Step 3 — Draft Order</h2>
+    <p class="hint">Set the pick order for pools manually. This order applies to every phase (Advance queue → Intermediate → Rest).</p>
+    <div id="order-list"></div>
+    <div class="toggle-row" style="margin-top:14px; display:block;">
+      <label class="field-label">First-pick fairness</label>
+      <select id="order-mode-select" onchange="S.orderMode=this.value; render();">
+        <option value="rotate" ${S.orderMode==='rotate'?'selected':''}>Rotate — first pick shifts to the next pool every round (recommended, fairest)</option>
+        <option value="snake" ${S.orderMode==='snake'?'selected':''}>Snake — order reverses every round (1-2-3-4, then 4-3-2-1)</option>
+        <option value="fixed" ${S.orderMode==='fixed'?'selected':''}>Fixed — Pool 1 in this list always picks first</option>
+      </select>
+      <p class="hint" style="margin-top:6px;">Example with 4 pools and this order — Rotate gives: Pool A first pick of Advance, then Pool B first pick of Intermediate (round 1), Pool C first pick of Intermediate (round 2), Pool D first pick of Rest (round 1), Pool A first pick of Rest (round 2) — the lead keeps moving instead of always being Pool A.</p>
+    </div>
+    <h3 style="margin-top:20px;">Pick order preview</h3>
+    <p class="hint">Exactly who gets first choice at each stage, based on the order and mode above — check this matches what you agreed with captains before you lock it in.</p>
+    <table style="margin-bottom:10px;">
+      <thead><tr><th>Pick</th><th>Filling</th><th>Gets first chance</th></tr></thead>
+      <tbody id="pick-preview-body"></tbody>
+    </table>
+    <div class="actions">
+      <button class="btn" onclick="startDraft()">Lock Order &amp; Start Draft →</button>
+    </div>
+  `;
+  drawOrderList();
+  const previewBody = document.getElementById('pick-preview-body');
+  previewBody.innerHTML = buildPickOrderPreview().map((r,i)=>
+    `<tr><td>${ordinal(i+1)} Pick</td><td><span class="tier-tag ${r.tierSlotLabel.startsWith('Advance')?'tier-adv':r.tierSlotLabel.startsWith('Intermediate')?'tier-int':'tier-rest'}">${r.tierSlotLabel}</span></td><td><b>${r.poolName}</b> will get first chance</td></tr>`
+  ).join('');
+}
+function drawOrderList(){
+  const wrap = document.getElementById('order-list');
+  wrap.innerHTML = S.draftOrderBase.map((pid,i)=>{
+    const pool = S.pools.find(p=>p.id===pid);
+    return `<div class="order-row">
+      <div class="idx">#${i+1}</div>
+      <div class="grow">${pool.captains.map(c=>c.name).join(' & ')} <span class="tier-tag tier-adv" style="margin-left:8px;">${pool.name}</span></div>
+      <div class="btns">
+        <button class="btn-ghost" onclick="moveOrder(${i},-1)">↑</button>
+        <button class="btn-ghost" onclick="moveOrder(${i},1)">↓</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function moveOrder(i,dir){
+  const j=i+dir; if(j<0||j>=S.draftOrderBase.length) return;
+  [S.draftOrderBase[i],S.draftOrderBase[j]] = [S.draftOrderBase[j],S.draftOrderBase[i]];
+  drawOrderList();
+  const previewBody = document.getElementById('pick-preview-body');
+  if(previewBody){
+    previewBody.innerHTML = buildPickOrderPreview().map((r,i)=>
+      `<tr><td>${ordinal(i+1)} Pick</td><td><span class="tier-tag ${r.tierSlotLabel.startsWith('Advance')?'tier-adv':r.tierSlotLabel.startsWith('Intermediate')?'tier-int':'tier-rest'}">${r.tierSlotLabel}</span></td><td><b>${r.poolName}</b> will get first chance</td></tr>`
+    ).join('');
+  }
+}
+
+/* ============================= TAB 4: LIVE DRAFT ============================= */
+function buildDraftPool(){
+  // sequence of phases: extraAdvance, intermediate, rest -- each phase drafted fully before next
+  S.draftPool = [
+    ...S.extraAdvanceQueue.map(p=>({...p, tier:'advance'})),
+    ...S.intermediate.map(p=>({...p, tier:'intermediate'})),
+    ...S.rest.map(p=>({...p, tier:'rest'}))
+  ];
+}
+function orderForRound(globalRound){
+  const base = S.draftOrderBase;
+  const n = base.length;
+  if(S.orderMode==='fixed') return [...base];
+  if(S.orderMode==='snake') return (globalRound%2===1) ? [...base].reverse() : [...base];
+  // rotate (default): first-pick shifts by one pool every round, continuing across tier boundaries
+  const shift = globalRound % n;
+  return [...base.slice(shift), ...base.slice(0,shift)];
+}
+// Builds a compact "who picks first" preview across every round of every tier, in the exact
+// "First Pick — Advance 2 — Pool A" style requested, so the organizer can verify before locking in.
+function buildPickOrderPreview(){
+  const phases = [
+    {tier:'advance', label:'Advance', count:S.extraAdvanceQueue.length, slotOffset:1}, // primary captain is already slot 1
+    {tier:'intermediate', label:'Intermediate', count:S.intermediate.length, slotOffset:0},
+    {tier:'rest', label:'Rest', count:S.rest.length, slotOffset:0}
+  ].filter(ph=>ph.count>0);
+  const n = S.draftOrderBase.length;
+  const rows = [];
+  let globalRound = 0;
+  let pickCounter = 0;
+  phases.forEach(ph=>{
+    const roundsInPhase = Math.ceil(ph.count / n);
+    for(let r=0; r<roundsInPhase; r++){
+      pickCounter++;
+      const order = orderForRound(globalRound);
+      const firstPool = S.pools.find(p=>p.id===order[0]);
+      const slotNum = ph.slotOffset + r + 1;
+      rows.push({
+        pickLabel: ordinal(pickCounter)+' round',
+        tierSlotLabel: `${ph.label} ${slotNum}`,
+        poolName: firstPool ? firstPool.name : '?'
+      });
+      globalRound++;
+    }
+  });
+  return rows;
+}
+function ordinal(n){
+  const s=['th','st','nd','rd'], v=n%100;
+  return n+(s[(v-20)%10]||s[v]||s[0]);
+}
+function buildPickSequence(){
+  // Build the ordered list of {poolId, tier, slotLabel} slots to fill.
+  // A "round" = one full pass where every pool gets exactly one pick. The round counter
+  // is continuous across Advance → Intermediate → Rest, so fairness carries over between tiers.
+  const seq = [];
+  const phases = [
+    {tier:'advance', label:'Advance', count:S.extraAdvanceQueue.length, slotOffset:1},
+    {tier:'intermediate', label:'Intermediate', count:S.intermediate.length, slotOffset:0},
+    {tier:'rest', label:'Rest', count:S.rest.length, slotOffset:0}
+  ].filter(ph=>ph.count>0);
+  const n = S.draftOrderBase.length;
+  let globalRound = 0;
+  phases.forEach(ph=>{
+    let filled=0;
+    let roundInPhase=0;
+    while(filled < ph.count){
+      const activeOrder = orderForRound(globalRound);
+      const slotLabel = `${ph.label} ${ph.slotOffset+roundInPhase+1}`;
+      for(const pid of activeOrder){
+        if(filled>=ph.count) break;
+        seq.push({poolId:pid, tier:ph.tier, slotLabel});
+        filled++;
+      }
+      globalRound++; roundInPhase++;
+    }
+  });
+  return seq;
+}
+function startDraft(){
+  if(!S.draftOrderBase.length){ alert('Set a draft order first.'); return; }
+  buildDraftPool();
+  S.draftPhaseSeq = buildPickSequence();
+  S.draftPointer = 0;
+  S.draftLog = [];
+  S.draftDone = false;
+  goTab('draft');
+}
+function currentPickSlot(){
+  return S.draftPhaseSeq[S.draftPointer] || null;
+}
+function renderDraft(el){
+  if(!S.draftPhaseSeq.length){ el.innerHTML = `<div class="empty-note">No draft in progress. Go to Draft Order and click "Lock Order &amp; Start Draft".</div>`; return; }
+  const slot = currentPickSlot();
+  if(!slot){
+    S.draftDone = true;
+    el.innerHTML = `
+      <h2>Draft Complete 🏓</h2>
+      <p class="hint">All players have been picked. Head to Rosters to review teams, then generate the Match Schedule.</p>
+      <div class="actions"><button class="btn" onclick="goTab('rosters')">View Final Rosters →</button></div>
+      <div class="picklog">${S.draftLog.map(l=>`<div>Pick ${S.draftLog.indexOf(l)+1}: ${captainLabel(l.poolId)} selected ${l.playerName} (${l.tier})</div>`).join('')}</div>
+    `;
+    return;
+  }
+  const pool = S.pools.find(p=>p.id===slot.poolId);
+  const tierRemaining = S.draftPool.filter(p=>p.tier===slot.tier);
+  const captainNames = pool.captains.map(c=>c.name).join(' & ');
+  el.innerHTML = `
+    <h2>Step 4 — Live Draft</h2>
+    <div class="pick-banner">
+      <div>
+        <div class="who">🏓 ${captainNames} is picking <span style="font-weight:400; font-size:14px; opacity:0.75;">(${pool.name})</span></div>
+        <div class="phase">Pick ${S.draftPointer+1} of ${S.draftPhaseSeq.length} · Choosing for slot <b>${slot.slotLabel}</b></div>
+      </div>
+      <button class="btn-ghost" ${S.draftLog.length===0?'disabled':''} onclick="undoPick()">↺ Undo last pick</button>
+    </div>
+    <h3>Available ${slot.tier} players (${tierRemaining.length}) — click a name to draft them</h3>
+    <div class="player-pool-list" id="draft-pool-list">
+      ${tierRemaining.map(p=>`<div class="player-chip" onclick="makePick('${p.id}')">${p.name}</div>`).join('')}
+    </div>
+    <div class="picklog">
+      <h3 style="margin-bottom:6px;">Pick log</h3>
+      ${S.draftLog.slice().reverse().map((l)=>`<div>Pick ${S.draftLog.indexOf(l)+1}: ${captainLabel(l.poolId)} → ${l.playerName} (${l.tier})</div>`).join('') || '<div>No picks yet.</div>'}
+    </div>
+  `;
+}
+function poolName(pid){ const p=S.pools.find(x=>x.id===pid); return p?p.name:'?'; }
+function captainLabel(pid){ const p=S.pools.find(x=>x.id===pid); return p ? `${p.captains.map(c=>c.name).join(' & ')} (${p.name})` : '?'; }
+function makePick(playerId){
+  const slot = currentPickSlot();
+  if(!slot) return;
+  const idx = S.draftPool.findIndex(p=>p.id===playerId);
+  if(idx<0) return;
+  const player = S.draftPool.splice(idx,1)[0];
+  const pool = S.pools.find(p=>p.id===slot.poolId);
+  if(slot.tier==='advance') pool.captains.push(player);
+  else if(slot.tier==='intermediate') pool.intermediate.push(player);
+  else pool.rest.push(player);
+  S.draftLog.push({poolId:slot.poolId, playerId:player.id, playerName:player.name, tier:slot.tier});
+  S.draftPointer++;
+  render();
+}
+function undoPick(){
+  if(!S.draftLog.length) return;
+  const last = S.draftLog.pop();
+  const pool = S.pools.find(p=>p.id===last.poolId);
+  let arr = last.tier==='advance'?pool.captains: last.tier==='intermediate'?pool.intermediate: pool.rest;
+  const idx = arr.findIndex(p=>p.id===last.playerId);
+  const [player] = arr.splice(idx,1);
+  S.draftPool.push({...player, tier:last.tier});
+  S.draftPointer--;
+  S.draftDone = false;
+  render();
+}
+
+/* ============================= TAB 5: ROSTERS ============================= */
+function renderRosters(el){
+  let html = `<h2>Step 5 — Final Rosters</h2><p class="hint">Review teams before generating matches. Use Print (bottom bar) for a paper copy at the venue.</p>`;
+  S.pools.forEach(p=>{
+    html += `<div class="pool-card">
+      <div class="pool-head"><span class="name">${p.name}</span></div>
+      <div style="display:flex; gap:26px; flex-wrap:wrap;">
+        <div><span class="tier-tag tier-adv">Advance</span><ul>${p.captains.map(c=>`<li>${c.name}</li>`).join('')}</ul></div>
+        <div><span class="tier-tag tier-int">Intermediate</span><ul>${p.intermediate.map(c=>`<li>${c.name}</li>`).join('')||'<li style="color:var(--cream-dim);">none</li>'}</ul></div>
+        <div><span class="tier-tag tier-rest">Rest</span><ul>${p.rest.map(c=>`<li>${c.name}</li>`).join('')||'<li style="color:var(--cream-dim);">none</li>'}</ul></div>
+      </div>
+    </div>`;
+  });
+  html += `<div class="actions"><button class="btn" onclick="goTab('schedule')">Continue to Match Schedule →</button></div>`;
+  el.innerHTML = html;
+}
+
+/* ============================= MATCH GENERATION ENGINE ============================= */
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function poolTierPlayers(pool, tier){
+  if(tier==='advance') return pool.captains;
+  if(tier==='intermediate') return pool.intermediate;
+  return pool.rest;
+}
+function tierLabel(t){ return t==='advance'?'Advance': t==='intermediate'?'Intermediate':'Rest'; }
+function findPlayer(id){
+  for(const pool of S.pools){
+    const all = [...pool.captains, ...pool.intermediate, ...pool.rest];
+    const hit = all.find(p=>p.id===id);
+    if(hit) return {...hit, poolId:pool.id, poolName:pool.name};
+  }
+  return null;
+}
+// Standard circle-method round robin draw for pools. Handles odd counts with a bye.
+function generateRoundRobinRounds(poolIds){
+  let ids = [...poolIds];
+  if(ids.length % 2 !== 0) ids.push(null); // null = bye slot
+  const n = ids.length;
+  const rounds = [];
+  let rot = [...ids];
+  for(let r=0; r<n-1; r++){
+    const roundTies = [];
+    for(let i=0;i<n/2;i++){
+      const a = rot[i], b = rot[n-1-i];
+      if(a!==null && b!==null) roundTies.push({poolA:a, poolB:b});
+    }
+    rounds.push(roundTies);
+    const fixed = rot[0];
+    const rest = rot.slice(1);
+    rest.unshift(rest.pop());
+    rot = [fixed, ...rest];
+  }
+  return rounds;
+}
+function buildDraw(){
+  S.rrRounds = generateRoundRobinRounds(S.pools.map(p=>p.id));
+  S.tiePairings = {};
+  S.results = {};
+  render();
+}
+
+/* ============================= TAB 6: SCHEDULE ============================= */
+const MATCH_TYPES = {
+  advadv:   {label:'Advance Doubles vs Advance Doubles',            tiers:['advance'],              tag:'tier-adv'},
+  intint:   {label:'Intermediate Doubles vs Intermediate Doubles',  tiers:['intermediate'],         tag:'tier-int'},
+  restrest: {label:'Rest Doubles vs Rest Doubles',                  tiers:['rest'],                 tag:'tier-rest'},
+  advint:   {label:'Advance + Intermediate Mixed Doubles',          tiers:['advance','intermediate'],tag:'tier-adv'},
+  advrest:  {label:'Advance + Rest Mixed Doubles',                  tiers:['advance','rest'],       tag:'tier-adv'},
+  intrest:  {label:'Intermediate + Rest Mixed Doubles',             tiers:['intermediate','rest'],  tag:'tier-int'}
+};
+function tieId(round, poolA, poolB){ return `r${round}_${poolA}_${poolB}`; }
+function ensurePairingSlot(tid, typeKey){
+  if(!S.tiePairings[tid]) S.tiePairings[tid] = {};
+  if(!S.tiePairings[tid][typeKey]) S.tiePairings[tid][typeKey] = {a:[], b:[]};
+  return S.tiePairings[tid][typeKey];
+}
+function setPairSlot(tid, typeKey, side, idx, value){
+  const slot = ensurePairingSlot(tid, typeKey);
+  slot[side][idx] = value || null;
+  render();
+}
+function pairingIsReady(slot){
+  if(!slot) return false;
+  const need = 2;
+  const aOk = slot.a.filter(Boolean).length===need && new Set(slot.a).size===need;
+  const bOk = slot.b.filter(Boolean).length===need && new Set(slot.b).size===need;
+  return aOk && bOk;
+}
+function scoreKey(tid, typeKey){ return `${tid}::${typeKey}`; }
+function getGames(tid, typeKey){
+  const key = scoreKey(tid, typeKey);
+  const rec = S.results[key];
+  if(rec && Array.isArray(rec.games)) return rec.games;
+  return [{a:null,b:null},{a:null,b:null},{a:null,b:null}];
+}
+function setGameScore(tid, typeKey, gameIdx, side, val){
+  const key = scoreKey(tid, typeKey);
+  if(!S.results[key] || !Array.isArray(S.results[key].games)){
+    S.results[key] = {games:[{a:null,b:null},{a:null,b:null},{a:null,b:null}]};
+  }
+  const num = val==='' ? null : Number(val);
+  S.results[key].games[gameIdx][side] = (num===null || isNaN(num)) ? null : num;
+  render();
+}
+// Best-of-3: first side to win 2 games wins the match. A game counts once both scores are entered and differ.
+function matchOutcome(games){
+  let gamesA=0, gamesB=0, ptsA=0, ptsB=0, played=0;
+  (games||[]).forEach(g=>{
+    if(g && g.a!=null && g.b!=null && g.a!==g.b){
+      played++;
+      ptsA += g.a; ptsB += g.b;
+      if(g.a>g.b) gamesA++; else gamesB++;
+    }
+  });
+  let winner = null;
+  if(gamesA>=2) winner='a'; else if(gamesB>=2) winner='b';
+  return {gamesA, gamesB, ptsA, ptsB, played, winner};
+}
+function toggleMatchType(key, checked){
+  S.matchTypesEnabled[key] = checked;
+  render();
+}
+// Count how many scheduled (paired) matches a given player currently has, across the whole draw.
+function playerLoad(playerId){
+  let n = 0;
+  Object.values(S.tiePairings).forEach(typeMap=>{
+    Object.values(typeMap).forEach(slot=>{
+      if(slot.a.includes(playerId) || slot.b.includes(playerId)) n++;
+    });
+  });
+  return n;
+}
+function renderPairSelector(poolId, tiers, tid, typeKey, side){
+  const pool = S.pools.find(p=>p.id===poolId);
+  const slot = ensurePairingSlot(tid, typeKey);
+  const existing = slot[side];
+  if(tiers.length===1){
+    const options = poolTierPlayers(pool, tiers[0]);
+    return [0,1].map(i=>`<select onchange="setPairSlot('${tid}','${typeKey}','${side}',${i},this.value)">
+        <option value="">${tierLabel(tiers[0])} #${i+1}...</option>
+        ${options.map(o=>`<option value="${o.id}" ${existing[i]===o.id?'selected':''}>${o.name} (${playerLoad(o.id)} scheduled)</option>`).join('')}
+      </select>`).join('');
+  } else {
+    const optsA = poolTierPlayers(pool, tiers[0]);
+    const optsB = poolTierPlayers(pool, tiers[1]);
+    return `<select onchange="setPairSlot('${tid}','${typeKey}','${side}',0,this.value)">
+        <option value="">${tierLabel(tiers[0])}...</option>
+        ${optsA.map(o=>`<option value="${o.id}" ${existing[0]===o.id?'selected':''}>${o.name} (${playerLoad(o.id)} scheduled)</option>`).join('')}
+      </select>
+      <select onchange="setPairSlot('${tid}','${typeKey}','${side}',1,this.value)">
+        <option value="">${tierLabel(tiers[1])}...</option>
+        ${optsB.map(o=>`<option value="${o.id}" ${existing[1]===o.id?'selected':''}>${o.name} (${playerLoad(o.id)} scheduled)</option>`).join('')}
+      </select>`;
+  }
+}
+function renderMatchSlot(tid, typeKey, poolA, poolB){
+  const meta = MATCH_TYPES[typeKey];
+  const slot = ensurePairingSlot(tid, typeKey);
+  const ready = pairingIsReady(slot);
+  const poolAObj = S.pools.find(p=>p.id===poolA), poolBObj = S.pools.find(p=>p.id===poolB);
+  const nameOfSel = (id)=> id ? (findPlayer(id)||{name:'?'}).name : '…';
+  const games = getGames(tid, typeKey);
+  const outcome = matchOutcome(games);
+  let verdict = 'Result: pending';
+  if(outcome.winner==='a') verdict = `<b style="color:var(--green-accent);">${poolAObj.name} pair won</b> (games ${outcome.gamesA}-${outcome.gamesB})`;
+  if(outcome.winner==='b') verdict = `<b style="color:var(--green-accent);">${poolBObj.name} pair won</b> (games ${outcome.gamesA}-${outcome.gamesB})`;
+  const gameRows = [0,1,2].map(i=>{
+    const g = games[i] || {a:null,b:null};
+    const isThird = i===2;
+    const needed = isThird ? (outcome.gamesA===1 && outcome.gamesB===1 && outcome.played<3) || (g.a!=null||g.b!=null) : true;
+    return `<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; ${isThird && !needed ? 'opacity:0.45;' : ''}">
+      <span style="width:52px; font-size:11.5px; color:var(--cream-dim); text-transform:uppercase;">Game ${i+1}</span>
+      <input type="number" min="0" style="width:64px;" value="${g.a==null?'':g.a}" placeholder="${poolAObj.name}" onchange="setGameScore('${tid}','${typeKey}',${i},'a',this.value)">
+      <span style="color:var(--cream-dim);">–</span>
+      <input type="number" min="0" style="width:64px;" value="${g.b==null?'':g.b}" placeholder="${poolBObj.name}" onchange="setGameScore('${tid}','${typeKey}',${i},'b',this.value)">
+      ${isThird ? '<span style="font-size:10.5px;color:var(--cream-dim);">(only if 1–1)</span>' : ''}
+    </div>`;
+  }).join('');
+  return `<div class="round-block" style="margin-bottom:12px;">
+    <div class="rh"><div class="title"><span class="tier-tag ${meta.tag}">${meta.label}</span></div></div>
+    <div class="rb">
+      <div class="grid2">
+        <div>
+          <label class="field-label">${poolAObj.name} pair</label>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">${renderPairSelector(poolA, meta.tiers, tid, typeKey, 'a')}</div>
+        </div>
+        <div>
+          <label class="field-label">${poolBObj.name} pair</label>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">${renderPairSelector(poolB, meta.tiers, tid, typeKey, 'b')}</div>
+        </div>
+      </div>
+      ${ready ? `
+        <div style="margin-top:12px;">
+          <div class="match-players" style="margin-bottom:8px;">${nameOfSel(slot.a[0])} &amp; ${nameOfSel(slot.a[1])} <span class="vs">vs</span> ${nameOfSel(slot.b[0])} &amp; ${nameOfSel(slot.b[1])}</div>
+          <label class="field-label">Enter game scores (best of 3)</label>
+          ${gameRows}
+          <div style="font-size:12.5px; margin-top:6px;">${verdict}</div>
+        </div>` : `<p class="hint" style="margin:10px 0 0;">Pick both players on each side to activate this match.</p>`}
+    </div>
+  </div>`;
+}
+function renderSchedule(el){
+  let html = `<h2>Step 6 — Match Schedule</h2>
+  <p class="hint">Pools play a full round robin — every pool meets every other pool once. For each Pool-vs-Pool tie, choose which of the six doubles match types to include, then enter the exact pairing your captains agree on before that tie is played. The "scheduled" count next to each name helps you keep everyone at 2+ matches.</p>
+  <h3>Match types to include in every tie</h3>
+  <div class="grid3" style="margin-bottom:10px;">
+    ${Object.keys(MATCH_TYPES).map(key=>`
+      <label class="toggle-row"><input type="checkbox" ${S.matchTypesEnabled[key]?'checked':''} onchange="toggleMatchType('${key}', this.checked)"> ${MATCH_TYPES[key].label}</label>
+    `).join('')}
+  </div>
+  <div class="actions" style="margin-top:6px;">
+    <button class="btn" onclick="if(!S.rrRounds.length || confirm('Regenerating the draw clears all pairings and results entered so far. Continue?')) buildDraw()">${S.rrRounds.length? 'Regenerate Round-Robin Draw' : 'Generate Round-Robin Draw'}</button>
+  </div>`;
+
+  if(S.rrRounds.length){
+    S.rrRounds.forEach((ties, ri)=>{
+      html += `<div class="round-block" style="border-color:var(--red);">
+        <div class="rh"><div class="title">Round ${ri+1}</div><div class="match-meta">${ties.length} tie${ties.length===1?'':'s'}${S.pools.length%2? ' · one pool has a bye this round':''}</div></div>
+        <div class="rb">`;
+      ties.forEach(tie=>{
+        const poolAObj = S.pools.find(p=>p.id===tie.poolA), poolBObj = S.pools.find(p=>p.id===tie.poolB);
+        const tid = tieId(ri+1, tie.poolA, tie.poolB);
+        html += `<h3 style="margin-top:18px;">🏓 ${poolAObj.name} vs ${poolBObj.name}</h3>`;
+        Object.keys(MATCH_TYPES).forEach(typeKey=>{
+          if(!S.matchTypesEnabled[typeKey]) return;
+          html += renderMatchSlot(tid, typeKey, tie.poolA, tie.poolB);
+        });
+      });
+      html += `</div></div>`;
+    });
+    html += `<div class="actions"><button class="btn" onclick="goTab('standings')">View Standings →</button></div>`;
+    html += renderShareButtons();
+  } else {
+    html += `<div class="empty-note">No draw yet — click "Generate Round-Robin Draw" above.</div>`;
+  }
+  el.innerHTML = html;
+}
+
+/* ============================= TAB 7: STANDINGS ============================= */
+function renderStandings(el){
+  const {playerStats, poolStats} = computeStandingsData();
+
+  const poolRows = S.pools.slice()
+    .map(p=>({p, s:poolStats[p.id]}))
+    .sort((x,y)=>standingsCompare(x.s,y.s))
+    .map(({p,s})=>`<tr>
+      <td><b>${p.name}</b></td>
+      <td>${p.captains.map(c=>c.name).join(', ')||'—'}</td>
+      <td>${p.intermediate.map(c=>c.name).join(', ')||'—'}</td>
+      <td>${p.rest.map(c=>c.name).join(', ')||'—'}</td>
+      <td>${s.played}</td>
+      <td><b>${s.won}</b></td>
+      <td>${s.gamesWon}-${s.gamesLost}</td>
+      <td>${s.ptsFor}-${s.ptsAgainst} <span style="color:var(--cream-dim);">(${s.ptsFor-s.ptsAgainst>=0?'+':''}${s.ptsFor-s.ptsAgainst})</span></td>
+    </tr>`).join('');
+
+  const playerRows = Object.values(playerStats).sort(standingsCompare).map(t=>
+    `<tr><td>${t.name}</td><td>${t.poolName}</td><td><span class="tier-tag tier-${t.tier==='advance'?'adv':t.tier==='intermediate'?'int':'rest'}">${tierLabel(t.tier)}</span></td>
+     <td>${t.played}</td><td><b>${t.won}</b></td><td>${t.played-t.won}</td>
+     <td>${t.gamesWon}-${t.gamesLost}</td>
+     <td>${t.ptsFor}-${t.ptsAgainst} <span style="color:var(--cream-dim);">(${t.ptsFor-t.ptsAgainst>=0?'+':''}${t.ptsFor-t.ptsAgainst})</span></td></tr>`).join('');
+
+  // Player load check — flags anyone under 2 scheduled matches so far.
+  const loadRows = allActivePlayers().map(p=>{
+    const load = playerLoad(p.id);
+    return `<tr><td>${p.name}</td><td>${p.poolName}</td><td><span class="tier-tag tier-${p.tier==='advance'?'adv':p.tier==='intermediate'?'int':'rest'}">${tierLabel(p.tier)}</span></td><td style="color:${load<2?'var(--red)':'inherit'}; font-weight:${load<2?'700':'400'};">${load}</td></tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <h2>Step 7 — Standings &amp; Team Details</h2>
+    <p class="hint">Enter game-by-game scores on the Schedule tab — everything below updates automatically. Final ranking is decided by: <b>1)</b> matches won, then <b>2)</b> games won, then <b>3)</b> points scored minus points conceded.</p>
+    <h3>Pool / team standings</h3>
+    <table><thead><tr><th>Pool</th><th>Advance</th><th>Intermediate</th><th>Rest</th><th>Played</th><th>Won</th><th>Games</th><th>Points (diff)</th></tr></thead>
+    <tbody>${poolRows}</tbody></table>
+
+    <h3 style="margin-top:22px;">Individual leaderboard</h3>
+    <table><thead><tr><th>Player</th><th>Pool</th><th>Tier</th><th>Played</th><th>Won</th><th>Lost</th><th>Games</th><th>Points (diff)</th></tr></thead>
+    <tbody>${playerRows || '<tr><td colspan="8" style="color:var(--cream-dim);">No results entered yet.</td></tr>'}</tbody></table>
+
+    <h3 style="margin-top:22px;">Match load check (min. 2 per player)</h3>
+    <p class="hint">Anyone shown in red currently has fewer than 2 matches scheduled — add them to another pairing on the Schedule tab.</p>
+    <table><thead><tr><th>Player</th><th>Pool</th><th>Tier</th><th>Scheduled matches</th></tr></thead>
+    <tbody>${loadRows}</tbody></table>
+  ` + renderShareButtons();
+}
+function allActivePlayers(){
+  const out = [];
+  S.pools.forEach(pool=>{
+    pool.captains.forEach(c=>out.push({...c, tier:'advance', poolId:pool.id, poolName:pool.name}));
+    pool.intermediate.forEach(c=>out.push({...c, tier:'intermediate', poolId:pool.id, poolName:pool.name}));
+    pool.rest.forEach(c=>out.push({...c, tier:'rest', poolId:pool.id, poolName:pool.name}));
+  });
+  return out;
+}
+function computeStandingsData(){
+  // id -> {name, poolName, poolId, tier, played, won, gamesWon, gamesLost, ptsFor, ptsAgainst}
+  const playerStats = {};
+  const poolStats = {};
+  S.pools.forEach(p=>{ poolStats[p.id] = {name:p.name, played:0, won:0, gamesWon:0, gamesLost:0, ptsFor:0, ptsAgainst:0}; });
+
+  function creditPlayers(ids, poolId, won, gamesFor, gamesAgainst, ptsFor, ptsAgainst){
+    ids.forEach(id=>{
+      if(!playerStats[id]){
+        const p = findPlayer(id);
+        if(!p) return;
+        playerStats[id] = {name:p.name, poolName:p.poolName, poolId:p.poolId, tier:p.tier, played:0, won:0, gamesWon:0, gamesLost:0, ptsFor:0, ptsAgainst:0};
+      }
+      const st = playerStats[id];
+      st.played++; if(won) st.won++;
+      st.gamesWon += gamesFor; st.gamesLost += gamesAgainst;
+      st.ptsFor += ptsFor; st.ptsAgainst += ptsAgainst;
+    });
+  }
+
+  Object.keys(S.tiePairings).forEach(tid=>{
+    Object.keys(S.tiePairings[tid]).forEach(typeKey=>{
+      const slot = S.tiePairings[tid][typeKey];
+      if(!pairingIsReady(slot)) return;
+      const games = getGames(tid, typeKey);
+      const oc = matchOutcome(games);
+      if(!oc.winner) return; // only fully-decided matches count toward standings
+      creditPlayers(slot.a, null, oc.winner==='a', oc.gamesA, oc.gamesB, oc.ptsA, oc.ptsB);
+      creditPlayers(slot.b, null, oc.winner==='b', oc.gamesB, oc.gamesA, oc.ptsB, oc.ptsA);
+      // pool attribution: side a players all belong to the same pool, likewise side b
+      const poolAId = playerStats[slot.a[0]] ? playerStats[slot.a[0]].poolId : null;
+      const poolBId = playerStats[slot.b[0]] ? playerStats[slot.b[0]].poolId : null;
+      if(poolAId && poolStats[poolAId]){
+        const ps = poolStats[poolAId];
+        ps.played++; if(oc.winner==='a') ps.won++;
+        ps.gamesWon += oc.gamesA; ps.gamesLost += oc.gamesB;
+        ps.ptsFor += oc.ptsA; ps.ptsAgainst += oc.ptsB;
+      }
+      if(poolBId && poolStats[poolBId]){
+        const ps = poolStats[poolBId];
+        ps.played++; if(oc.winner==='b') ps.won++;
+        ps.gamesWon += oc.gamesB; ps.gamesLost += oc.gamesA;
+        ps.ptsFor += oc.ptsB; ps.ptsAgainst += oc.ptsA;
+      }
+    });
+  });
+  return {playerStats, poolStats};
+}
+// Standings sort: 1) matches won  2) games won  3) points scored minus points conceded
+function standingsCompare(a,b){
+  if(b.won !== a.won) return b.won - a.won;
+  if(b.gamesWon !== a.gamesWon) return b.gamesWon - a.gamesWon;
+  const diffA = a.ptsFor - a.ptsAgainst, diffB = b.ptsFor - b.ptsAgainst;
+  return diffB - diffA;
+}
+
+/* ============================= SHARE / EXPORT ============================= */
+function shareFileBaseName(){ return 'tt-tournament-'+new Date().toISOString().slice(0,10); }
+function buildShareContentInner(){
+  const {playerStats, poolStats} = computeStandingsData();
+  let out = `<h1 style="margin:0 0 4px;font-size:22px;">Table Tennis Tournament — Schedule &amp; Standings</h1>
+  <div style="color:#666;font-size:12px;margin-bottom:20px;">Snapshot generated ${new Date().toLocaleString()} — read-only, will not update automatically.</div>
+  <h2 style="font-size:16px;border-bottom:2px solid #C4392B;padding-bottom:4px;">Team Rosters</h2>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:22px;">
+    <thead><tr>${['Pool','Advance','Intermediate','Rest'].map(h=>`<th style="text-align:left;padding:6px;border-bottom:1px solid #ccc;font-size:11px;text-transform:uppercase;color:#666;">${h}</th>`).join('')}</tr></thead>
+    <tbody>${S.pools.map(p=>`<tr>
+      <td style="padding:6px;border-bottom:1px solid #eee;font-weight:700;">${p.name}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;">${p.captains.map(c=>c.name).join(', ')||'—'}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;">${p.intermediate.map(c=>c.name).join(', ')||'—'}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;">${p.rest.map(c=>c.name).join(', ')||'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table>
+  <h2 style="font-size:16px;border-bottom:2px solid #C4392B;padding-bottom:4px;">Match Schedule</h2>`;
+
+  if(!S.rrRounds.length){
+    out += `<p style="color:#888;">No schedule generated yet.</p>`;
+  } else {
+    S.rrRounds.forEach((ties, ri)=>{
+      out += `<h3 style="margin:18px 0 8px;font-size:14px;">Round ${ri+1}</h3>`;
+      ties.forEach(tie=>{
+        const poolAObj = S.pools.find(p=>p.id===tie.poolA), poolBObj = S.pools.find(p=>p.id===tie.poolB);
+        const tid = tieId(ri+1, tie.poolA, tie.poolB);
+        out += `<div style="margin:0 0 14px;">
+          <div style="font-weight:700;margin-bottom:5px;">🏓 ${poolAObj.name} vs ${poolBObj.name}</div>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;background:#fff;">`;
+        Object.keys(MATCH_TYPES).forEach(typeKey=>{
+          if(!S.matchTypesEnabled[typeKey]) return;
+          const meta = MATCH_TYPES[typeKey];
+          const slot = (S.tiePairings[tid]||{})[typeKey];
+          const ready = pairingIsReady(slot);
+          let desc;
+          if(!ready){ desc = `<span style="color:#999;">Team selection pending</span>`; }
+          else {
+            const nm=(id)=> (findPlayer(id)||{name:'?'}).name;
+            const games = getGames(tid, typeKey);
+            const oc = matchOutcome(games);
+            const scoreStr = games.filter(g=>g.a!=null&&g.b!=null).map(g=>`${g.a}-${g.b}`).join(', ');
+            let resTxt = 'Result: pending';
+            if(oc.winner==='a') resTxt = `Winner: ${poolAObj.name} pair (games ${oc.gamesA}-${oc.gamesB}${scoreStr?', '+scoreStr:''})`;
+            if(oc.winner==='b') resTxt = `Winner: ${poolBObj.name} pair (games ${oc.gamesA}-${oc.gamesB}${scoreStr?', '+scoreStr:''})`;
+            desc = `${nm(slot.a[0])} &amp; ${nm(slot.a[1])} <span style="color:#888;">vs</span> ${nm(slot.b[0])} &amp; ${nm(slot.b[1])} — <b>${resTxt}</b>`;
+          }
+          out += `<tr><td style="padding:5px 8px;border-bottom:1px solid #eee;width:230px;color:#A8690E;font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;">${meta.label}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;">${desc}</td></tr>`;
+        });
+        out += `</table></div>`;
+      });
+    });
+  }
+
+  const poolRows = S.pools.slice()
+    .map(p=>({p, s:poolStats[p.id]}))
+    .sort((x,y)=>standingsCompare(x.s,y.s))
+    .map(({p,s})=>`<tr>
+      <td style="padding:6px;border-bottom:1px solid #eee;font-weight:700;">${p.name}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;">${s.played}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;font-weight:700;">${s.won}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;">${s.gamesWon}-${s.gamesLost}</td>
+      <td style="padding:6px;border-bottom:1px solid #eee;">${s.ptsFor}-${s.ptsAgainst} (${s.ptsFor-s.ptsAgainst>=0?'+':''}${s.ptsFor-s.ptsAgainst})</td>
+    </tr>`).join('');
+  const playerRows = Object.values(playerStats).sort(standingsCompare).map(t=>
+    `<tr><td style="padding:6px;border-bottom:1px solid #eee;">${t.name}</td>
+     <td style="padding:6px;border-bottom:1px solid #eee;">${t.poolName}</td>
+     <td style="padding:6px;border-bottom:1px solid #eee;">${tierLabel(t.tier)}</td>
+     <td style="padding:6px;border-bottom:1px solid #eee;">${t.played}</td>
+     <td style="padding:6px;border-bottom:1px solid #eee;font-weight:700;">${t.won}</td>
+     <td style="padding:6px;border-bottom:1px solid #eee;">${t.gamesWon}-${t.gamesLost}</td>
+     <td style="padding:6px;border-bottom:1px solid #eee;">${t.ptsFor}-${t.ptsAgainst} (${t.ptsFor-t.ptsAgainst>=0?'+':''}${t.ptsFor-t.ptsAgainst})</td></tr>`).join('');
+
+  out += `<h2 style="font-size:16px;border-bottom:2px solid #C4392B;padding-bottom:4px;margin-top:24px;">Standings</h2>
+  <div style="color:#666;font-size:11.5px;margin-bottom:10px;">Ranked by: 1) matches won, 2) games won, 3) points scored minus points conceded.</div>
+  <h3 style="font-size:14px;">Pool standings</h3>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:18px;">
+    <thead><tr>${['Pool','Played','Won','Games','Points (diff)'].map(h=>`<th style="text-align:left;padding:6px;border-bottom:1px solid #ccc;font-size:11px;text-transform:uppercase;color:#666;">${h}</th>`).join('')}</tr></thead>
+    <tbody>${poolRows}</tbody>
+  </table>
+  <h3 style="font-size:14px;">Individual leaderboard</h3>
+  <table style="width:100%;border-collapse:collapse;">
+    <thead><tr>${['Player','Pool','Tier','Played','Won','Games','Points (diff)'].map(h=>`<th style="text-align:left;padding:6px;border-bottom:1px solid #ccc;font-size:11px;text-transform:uppercase;color:#666;">${h}</th>`).join('')}</tr></thead>
+    <tbody>${playerRows || '<tr><td colspan="7" style="padding:6px;color:#999;">No results entered yet.</td></tr>'}</tbody>
+  </table>`;
+  return out;
+}
+function downloadShareHTML(){
+  const inner = buildShareContentInner();
+  const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table Tennis Tournament — Schedule</title>
+  <style>
+    body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#BFE6F7;color:#0A1B23;padding:24px;max-width:900px;margin:0 auto;}
+    table{background:#fff;border-radius:8px;}
+    @media print{ body{background:#fff;padding:8px;} }
+  </style></head>
+  <body>${inner}
+  <p style="margin-top:26px;color:#888;font-size:11px;">This is a read-only snapshot for sharing — it will not update automatically. Ask the organizer for a fresh copy after new results are entered.</p>
+  </body></html>`;
+  const blob = new Blob([doc], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = shareFileBaseName()+'.html';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function printShare(){
+  const area = document.getElementById('print-share-area');
+  area.innerHTML = buildShareContentInner();
+  document.body.classList.add('sharing-print');
+  window.print();
+  setTimeout(()=>{ document.body.classList.remove('sharing-print'); area.innerHTML=''; }, 400);
+}
+function renderShareButtons(){
+  return `<div class="actions no-print" style="margin-top:18px; border-top:1px dashed var(--line); padding-top:16px;">
+    <button class="btn secondary" onclick="downloadShareHTML()">📄 Download shareable HTML (read-only)</button>
+    <button class="btn secondary" onclick="printShare()">🖨 Export as PDF (print dialog → Save as PDF)</button>
+  </div>`;
+}
+
+/* ============================= SAVE / LOAD / RESET ============================= */
+function saveProgress(){
+  const blob = new Blob([JSON.stringify(S,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'tt-tournament-progress.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function loadProgress(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  if(!confirm('Loading a file will replace everything currently in the tool. Continue?')) { evt.target.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const loaded = JSON.parse(e.target.result);
+      S = loaded;
+      render();
+    }catch(err){ alert('Could not read that file — is it a Tournament Builder progress file?'); }
+  };
+  reader.readAsText(file);
+}
+function resetAll(){
+  try{ localStorage.removeItem(AUTOSAVE_KEY); }catch(e){}
+  S = {currentTab:'players', advance:[], intermediate:[], rest:[], numPools:0, pools:[], extraAdvanceQueue:[],
+    draftOrderBase:[], orderMode:'rotate', draftPhaseSeq:[], draftPointer:0, draftPool:[], draftLog:[], draftDone:false,
+    rrRounds:[], matchTypesEnabled:{advadv:true, intint:true, restrest:true, advint:true, advrest:true, intrest:true},
+    tiePairings:{}, results:{}};
+  render();
+}
+
+/* ============================= INIT ============================= */
+tryAutoload();
+render();
+</script>
+</body>
+</html>

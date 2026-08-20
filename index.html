@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Table Tennis Tournaments</title>
+<style>
+  :root{ --bg:#BFE6F7; --panel:#FFFFFF; --line:rgba(8,30,40,0.16); --ink:#0A1B23; --dim:rgba(10,27,35,0.62); --red:#C4392B; }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
+  .wrap{max-width:760px; margin:0 auto; padding:40px 20px 80px;}
+  h1{font-size:26px; letter-spacing:1px; text-transform:uppercase; font-weight:800; margin-bottom:4px;}
+  p.sub{color:var(--dim); margin-top:0; margin-bottom:32px;}
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:22px 26px; margin-bottom:22px;}
+  h2{font-size:15px; text-transform:uppercase; letter-spacing:0.5px; margin-top:0;}
+  ul{margin:0; padding-left:20px;}
+  li{margin-bottom:8px; font-size:14.5px;}
+  a{color:var(--red); font-weight:600; text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .tool-link{display:inline-block; background:var(--red); color:#fff; padding:10px 18px; border-radius:7px; font-weight:700; text-transform:uppercase; font-size:13px; letter-spacing:0.5px;}
+  .tool-link:hover{text-decoration:none; filter:brightness(1.08);}
+  .empty{color:var(--dim); font-size:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Club Table Tennis Tournaments</h1>
+  <p class="sub">Draws, schedules and standings for every monthly tournament.</p>
+
+  <div class="panel">
+    <h2>Monthly tournaments</h2>
+    <ul>
+      <!--
+        Add one line here per month, pointing at the file you uploaded into /tournaments/.
+        Example:
+        <li><a href="tournaments/2026-08.html">August 2026</a></li>
+      -->
+      <li class="empty">No tournaments published yet — check back after the next event.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>Organizers</h2>
+    <p style="font-size:14px; color:var(--dim); margin-top:0;">Run the draft, schedule and scoring tool below. Progress auto-saves in your browser; use Save/Load to back up or move between devices.</p>
+    <a class="tool-link" href="tool.html">Open Tournament Builder →</a>
+  </div>
+</div>
+</body>
+</html>
