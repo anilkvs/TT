@@ -3,47 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Club Table Tennis Tournaments</title>
+<title>Club Table Tennis — Tournaments</title>
 <style>
-  :root{ --bg:#BFE6F7; --panel:#FFFFFF; --line:rgba(8,30,40,0.16); --ink:#0A1B23; --dim:rgba(10,27,35,0.62); --red:#C4392B; }
+  :root{
+    --court:#0F8B8D;
+    --court-dark:#0A6567;
+    --paddle:#FF6B35;
+    --ball:#FFD23F;
+    --pink:#EF476F;
+    --ink:#12283A;
+    --cream:#FFF8EC;
+    --line: rgba(18,40,58,0.10);
+  }
   *{box-sizing:border-box;}
-  body{margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
-  .wrap{max-width:760px; margin:0 auto; padding:40px 20px 80px;}
-  h1{font-size:26px; letter-spacing:1px; text-transform:uppercase; font-weight:800; margin-bottom:4px;}
-  p.sub{color:var(--dim); margin-top:0; margin-bottom:32px;}
-  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:22px 26px; margin-bottom:22px;}
-  h2{font-size:15px; text-transform:uppercase; letter-spacing:0.5px; margin-top:0;}
-  ul{margin:0; padding-left:20px;}
-  li{margin-bottom:8px; font-size:14.5px;}
-  a{color:var(--red); font-weight:600; text-decoration:none;}
-  a:hover{text-decoration:underline;}
-  .tool-link{display:inline-block; background:var(--red); color:#fff; padding:10px 18px; border-radius:7px; font-weight:700; text-transform:uppercase; font-size:13px; letter-spacing:0.5px;}
-  .tool-link:hover{text-decoration:none; filter:brightness(1.08);}
-  .empty{color:var(--dim); font-size:14px;}
+  body{
+    margin:0; background:var(--cream); color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  a{color:inherit;}
+
+  /* ===== HERO ===== */
+  .hero{
+    position:relative; overflow:hidden;
+    background: linear-gradient(120deg, var(--court) 0%, var(--court-dark) 55%, var(--ink) 100%);
+    color:#fff; padding:70px 20px 90px; text-align:center;
+  }
+  .hero::before{
+    content:""; position:absolute; inset:0; opacity:0.10; pointer-events:none;
+    background-image: radial-gradient(circle, #fff 2px, transparent 2px);
+    background-size: 26px 26px;
+  }
+  .hero-inner{position:relative; max-width:720px; margin:0 auto;}
+  .eyebrow{
+    display:inline-block; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.35);
+    padding:5px 14px; border-radius:20px; font-size:11.5px; letter-spacing:1.5px; text-transform:uppercase;
+    font-weight:700; margin-bottom:22px;
+  }
+  .hero h1{
+    font-size:clamp(34px,6vw,54px); margin:0 0 12px; font-weight:900; letter-spacing:-0.5px; line-height:1.05;
+  }
+  .hero h1 span{color:var(--ball);}
+  .hero p{font-size:17px; opacity:0.92; max-width:480px; margin:0 auto 8px; line-height:1.55;}
+
+  /* rally animation — the signature element */
+  .rally{ position:relative; height:78px; max-width:260px; margin:34px auto 0; }
+  .paddle{ position:absolute; top:50%; width:14px; height:38px; border-radius:8px; transform:translateY(-50%) rotate(20deg); }
+  .paddle.left{ left:2px; background:var(--paddle); transform-origin:bottom center; animation: paddleLeft 1.6s ease-in-out infinite; }
+  .paddle.right{ right:2px; background:var(--pink); transform-origin:bottom center; animation: paddleRight 1.6s ease-in-out infinite; }
+  .ball{ position:absolute; top:50%; left:50%; width:12px; height:12px; border-radius:50%; background:var(--ball);
+    box-shadow:0 0 8px rgba(255,210,63,0.7); animation: rallyMove 1.6s ease-in-out infinite; }
+  @keyframes rallyMove{
+    0%{ left:20px; top:56px; }
+    25%{ left:50%; top:6px; }
+    50%{ left:calc(100% - 26px); top:56px; }
+    75%{ left:50%; top:6px; }
+    100%{ left:20px; top:56px; }
+  }
+  @keyframes paddleLeft{ 0%,100%{ transform:translateY(-50%) rotate(20deg);} 12%{ transform:translateY(-50%) rotate(-8deg);} 24%{ transform:translateY(-50%) rotate(20deg);} }
+  @keyframes paddleRight{ 0%,50%{ transform:translateY(-50%) rotate(-20deg);} 62%{ transform:translateY(-50%) rotate(8deg);} 74%,100%{ transform:translateY(-50%) rotate(-20deg);} }
+  @media (prefers-reduced-motion: reduce){ .ball, .paddle{ animation:none; } }
+
+  /* ===== BODY ===== */
+  .wrap{ max-width:820px; margin:0 auto; padding:0 20px 90px; }
+  .section{ margin-top:-40px; position:relative; z-index:2; }
+  h2.section-title{
+    font-size:13px; letter-spacing:1.5px; text-transform:uppercase; font-weight:800; color:var(--court-dark);
+    margin:0 0 14px;
+  }
+
+  .card-panel{
+    background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px;
+    box-shadow:0 12px 28px rgba(18,40,58,0.08); margin-bottom:26px;
+  }
+
+  .month-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:14px; }
+  .month-card{
+    display:block; text-decoration:none; color:var(--ink);
+    background:var(--cream); border-radius:12px; padding:18px 18px 16px;
+    border-left:6px solid var(--paddle); transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .month-card:nth-child(3n+2){ border-left-color:var(--court); }
+  .month-card:nth-child(3n+3){ border-left-color:var(--pink); }
+  .month-card:hover{ transform:translateY(-3px); box-shadow:0 8px 18px rgba(18,40,58,0.12); }
+  .month-card .m-name{ font-weight:800; font-size:16.5px; margin-bottom:4px; }
+  .month-card .m-cta{ font-size:12.5px; font-weight:700; color:var(--court-dark); }
+
+  .empty-state{
+    text-align:center; padding:40px 20px; color:rgba(18,40,58,0.55);
+  }
+  .empty-state .big-ball{ font-size:34px; display:block; margin-bottom:10px; }
+  .empty-state b{ color:var(--ink); }
+
+  .organizer-panel{
+    background: linear-gradient(120deg, var(--paddle), var(--pink));
+    border-radius:16px; padding:26px 24px; color:#fff; box-shadow:0 12px 28px rgba(239,71,111,0.25);
+  }
+  .organizer-panel h2{ margin:0 0 6px; font-size:17px; letter-spacing:0.3px; }
+  .organizer-panel p{ margin:0 0 18px; opacity:0.95; font-size:14px; line-height:1.5; max-width:480px; }
+  .tool-link{
+    display:inline-block; background:#fff; color:var(--pink); padding:11px 22px; border-radius:8px;
+    font-weight:800; text-transform:uppercase; font-size:13px; letter-spacing:0.5px; text-decoration:none;
+  }
+  .tool-link:hover{ filter:brightness(0.97); }
+
+  footer{ text-align:center; font-size:12px; color:rgba(18,40,58,0.45); padding:30px 20px 10px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Club Table Tennis Tournaments</h1>
-  <p class="sub">Draws, schedules and standings for every monthly tournament.</p>
 
-  <div class="panel">
-    <h2>Monthly tournaments</h2>
-    <ul>
-      <!--
-        Add one line here per month, pointing at the file you uploaded into /tournaments/.
-        Example:
-        <li><a href="tournaments/2026-08.html">August 2026</a></li>
-      -->
-      <li class="empty">No tournaments published yet — check back after the next event.</li>
-    </ul>
-  </div>
-
-  <div class="panel">
-    <h2>Organizers</h2>
-    <p style="font-size:14px; color:var(--dim); margin-top:0;">Run the draft, schedule and scoring tool below. Progress auto-saves in your browser; use Save/Load to back up or move between devices.</p>
-    <a class="tool-link" href="tool.html">Open Tournament Builder →</a>
+<div class="hero">
+  <div class="hero-inner">
+    <span class="eyebrow">🏓 Club Tournaments</span>
+    <h1>Every Rally.<br>Every <span>Standing</span>.</h1>
+    <p>Draws, schedules and final standings for every monthly table tennis tournament — one link, updated every month.</p>
+    <div class="rally">
+      <div class="paddle left"></div>
+      <div class="ball"></div>
+      <div class="paddle right"></div>
+    </div>
   </div>
 </div>
+
+<div class="wrap">
+  <div class="section">
+    <div class="card-panel">
+      <h2 class="section-title">Tournament Archive</h2>
+      <div class="month-grid" id="month-grid">
+        <!--
+          Add one card per month here, pointing at the file you uploaded into /tournaments/.
+          Example:
+          <a class="month-card" href="tournaments/2026-08.html">
+            <div class="m-name">August 2026</div>
+            <div class="m-cta">View draws &amp; standings →</div>
+          </a>
+        -->
+      </div>
+      <div class="empty-state" id="empty-state">
+        <span class="big-ball">🏓</span>
+        <b>No tournaments published yet.</b><br>Check back after the next event.
+      </div>
+    </div>
+
+    <div class="organizer-panel">
+      <h2>Running the next tournament?</h2>
+      <p>Open the builder to set up pools, run the live draft, schedule matches, and enter scores. Progress auto-saves in your browser — use Save/Load to back up or hand off to a co-organizer.</p>
+      <a class="tool-link" href="tool.html">Open Tournament Builder →</a>
+    </div>
+  </div>
+</div>
+
+<footer>Club Table Tennis · Hosted free on GitHub Pages</footer>
+
+<script>
+  // Hides the empty-state message automatically once at least one month card exists.
+  const grid = document.getElementById('month-grid');
+  if(grid.children.length > 0){ document.getElementById('empty-state').style.display = 'none'; }
+</script>
 </body>
 </html>
